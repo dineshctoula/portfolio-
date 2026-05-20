@@ -19,6 +19,8 @@ services:
     volumes:
       - ./backend:/app
       - /app/node_modules
+
+      #  live reload works with the volume     
     env_file:
       - ./backend/.env
     depends_on:
