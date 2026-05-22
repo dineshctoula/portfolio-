@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
+import { useState } from "react";
+import api from "../../services/api";
 
 type FormData = {
   name: string;
@@ -8,6 +10,9 @@ type FormData = {
 };
 
 export default function ContactSection() {
+  const [loading, setLoading] = useState(false);
+  const [statusMessage, setStatusMessage] = useState("");
+
   const {
     register,
     handleSubmit,
@@ -15,15 +20,30 @@ export default function ContactSection() {
     formState: { errors },
   } = useForm<FormData>();
 
-  const onSubmit = (data: FormData) => {
-    console.log("Form Data:", data);
-    alert("Message sent (UI only)");
-    reset();
+  const onSubmit = async (data: FormData) => {
+    try {
+      setLoading(true);
+
+      console.log("SENDING DATA:", data);
+
+      await api.post("/contact", data);
+
+      setStatusMessage("Message sent successfully!");
+      reset();
+    } catch (error) {
+      console.error(error);
+      setStatusMessage("Failed to send message.");
+    } finally {
+      setLoading(false);
+
+      setTimeout(() => {
+        setStatusMessage("");
+      }, 3000);
+    }
   };
 
   return (
     <section className="py-32 px-6 max-w-3xl mx-auto">
-
       <motion.h2
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -35,11 +55,8 @@ export default function ContactSection() {
 
       <motion.form
         onSubmit={handleSubmit(onSubmit)}
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
         className="space-y-6"
       >
-
         {/* Name */}
         <div>
           <input
@@ -48,7 +65,7 @@ export default function ContactSection() {
             className="w-full p-4 rounded-lg bg-white/5 border border-white/10 outline-none"
           />
           {errors.name && (
-            <p className="text-red-400 text-sm">
+            <p className="text-red-400 text-sm mt-1">
               {errors.name.message}
             </p>
           )}
@@ -68,7 +85,7 @@ export default function ContactSection() {
             className="w-full p-4 rounded-lg bg-white/5 border border-white/10 outline-none"
           />
           {errors.email && (
-            <p className="text-red-400 text-sm">
+            <p className="text-red-400 text-sm mt-1">
               {errors.email.message}
             </p>
           )}
@@ -83,7 +100,7 @@ export default function ContactSection() {
             className="w-full p-4 rounded-lg bg-white/5 border border-white/10 outline-none"
           />
           {errors.message && (
-            <p className="text-red-400 text-sm">
+            <p className="text-red-400 text-sm mt-1">
               {errors.message.message}
             </p>
           )}
@@ -93,11 +110,18 @@ export default function ContactSection() {
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="w-full py-4 rounded-lg bg-cyan-500 font-semibold"
+          disabled={loading}
+          className="w-full py-4 rounded-lg bg-cyan-500 font-semibold disabled:opacity-50"
         >
-          Send Message
+          {loading ? "Sending..." : "Send Message"}
         </motion.button>
 
+        {/* Status */}
+        {statusMessage && (
+          <p className="text-center text-green-400">
+            {statusMessage}
+          </p>
+        )}
       </motion.form>
     </section>
   );

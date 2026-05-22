@@ -4,17 +4,16 @@ import { CreateContactDto } from './dto/create-contact.dto';
 
 @Controller('contact')
 export class ContactController {
-  constructor(private contactService: ContactService) {}
+  constructor(private readonly contactService: ContactService) {}
 
   @Post()
   create(@Body() body: CreateContactDto) {
+    console.log("BODY RECEIVED:", body);
     return this.contactService.create(body);
-    //  yesle database ma data save garxa 
   }
 
   @Get()
   findAll() {
     return this.contactService.findAll();
-    // yesle database ma vako sabai contact haru lai find garxa ra order by createdAt desc garxa
   }
 }
